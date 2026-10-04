@@ -25,13 +25,33 @@ android {
         versionName = flutter.versionName
     }
 
+    buildFeatures {
+        resValues = true
+    }
+
+    flavorDimensions += "default"
+    productFlavors {
+        create("dev") {
+            dimension = "default"
+            applicationIdSuffix = ".dev"
+            resValue("string", "app_name", "NavTest Dev")
+        }
+        create("prod") {
+            dimension = "default"
+            resValue("string", "app_name", "NavTest")
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+}
+
+dependencies {
+    implementation("com.google.android.gms:play-services-location:21.3.0")
 }
 
 kotlin {
