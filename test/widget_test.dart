@@ -1,30 +1,46 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:route_and_car_navigation/main.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:route_and_car_navigation/app/core/utils/geo_math.dart';
+import 'package:route_and_car_navigation/app/core/utils/shortest_bearing.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  group('GeoMath and ShortestBearing Unit Tests', () {
+    test('Calculates geodesic distance accurately', () {
+      const p1 = LatLng(0.0, 0.0);
+      const p2 = LatLng(0.0, 1.0);
+      final distance = GeoMath.distanceBetween(p1, p2);
+      expect(distance, greaterThan(111000));
+      expect(distance, lessThan(112000));
+    });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    test('Shortest angle delta avoids long-way-round rotation', () {
+      // 359° to 1° should be +2°, not -358°
+      final delta = ShortestBearing.shortestAngleDelta(359, 1);
+      expect(delta, closeTo(2.0, 0.001));
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+      // 1° to 359° should be -2°, not +358°
+      final deltaReverse = ShortestBearing.shortestAngleDelta(1, 359);
+      expect(deltaReverse, closeTo(-2.0, 0.001));
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+      // 10° to 100° should be +90°
+      final deltaNormal = ShortestBearing.shortestAngleDelta(10, 100);
+      expect(deltaNormal, closeTo(90.0, 0.001));
+    });
+
+    test('Interpolates angle along shortest path correctly', () {
+      final angle = ShortestBearing.interpolateAngle(359, 1, 0.5);
+      expect(angle, closeTo(0.0, 0.001));
+    });
+
+    test('Handles duplicate points safely without NaN or crash', () {
+      const p1 = LatLng(23.8103, 90.4125);
+      const p2 = LatLng(23.8103, 90.4125);
+      final dist = GeoMath.distanceBetween(p1, p2);
+      expect(dist, equals(0.0));
+
+      final bearing = GeoMath.bearingBetween(p1, p2, fallbackBearing: 45.0);
+      expect(bearing, equals(45.0));
+      expect(bearing.isNaN, isFalse);
+    });
   });
 }
