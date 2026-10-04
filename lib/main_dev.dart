@@ -8,7 +8,6 @@ import 'environment.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Default entry point runs dev environment
   Environment.init(
     const Environment(
       flavor: AppFlavor.dev,

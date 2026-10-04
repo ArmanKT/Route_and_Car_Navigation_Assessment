@@ -8,13 +8,12 @@ import 'environment.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Default entry point runs dev environment
   Environment.init(
     const Environment(
-      flavor: AppFlavor.dev,
-      appName: 'NavTest Dev',
+      flavor: AppFlavor.prod,
+      appName: 'NavTest',
       routingBaseUrl: 'https://router.project-osrm.org',
-      showDevBanner: true,
+      showDevBanner: false,
     ),
   );
 
